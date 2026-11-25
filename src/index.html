@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Concept Explainer — Visual, Logical & Interactive Tutor</title>
+  <!-- Google Fonts: Fraunces (Editorial Serif), Plus Jakarta Sans (Clean UI), JetBrains Mono (Math/Params) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for crisp mathematical formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+cream: '#F7F3EB',
+sand: '#EFE9DD',
+stone: '#DED7C8',
+terracotta: '#C85A32',
+terracottaDark: '#B04822',
+sage: '#2E5A44',
+sageSoft: '#E3EDE8',
+ink: '#1E201E',
+slateMuted: '#5C615C',
+        },
+fontFamily: {
+serif: ['Fraunces', 'Georgia', 'serif'],
+sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+mono: ['JetBrains Mono', 'monospace'],
+        },
+        },
+        },
+        };
+  </script>
+<style>
+body {
+    background-color: #F7F3EB;
+    color: #1E201E;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Editorial subtle paper texture */
+    .paper-bg {
+    background-image: radial-gradient(rgba(30, 32, 30, 0.04) 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+/* Warm shimmer loading animation */
+@keyframes warmShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+    .shimmer-box {
+    background: linear-gradient(90deg, #EFE9DD 25%, #F9F6F0 50%, #EFE9DD 75%);
+    background-size: 200% 100%;
+    animation: warmShimmer 1.6s infinite linear;
+}
+
+/* Custom range sliders in Terracotta & Sage */
+input[type="range"].studio-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #DED7C8;
+    border-radius: 999px;
+    outline: none;
+}
+input[type="range"].studio-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #C85A32;
+    cursor: pointer;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 6px rgba(30, 32, 30, 0.25);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+input[type="range"].studio-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    background: #B04822;
+}
+
+/* Smooth SVG node hover transitions */
+    .diagram-node {
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), filter 0.25s ease;
+    cursor: pointer;
+}
+    .diagram-node:hover {
+    filter: drop-shadow(0 6px 14px rgba(200, 90, 50, 0.22));
+}
+
+/* Custom scrollbar */
+    ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+    ::-webkit-scrollbar-track {
+    background: #EFE9DD;
+}
+    ::-webkit-scrollbar-thumb {
+    background: #C8BFB0;
+    border-radius: 999px;
+}
+    ::-webkit-scrollbar-thumb:hover {
+    background: #A99E8E;
+}
+  </style>
+</head>
+<body class="paper-bg min-h-screen flex flex-col selection:bg-terracotta/20 selection:text-ink">
+
+  <!-- Toast Notification Banner (No alert() used anywhere) -->
+  <div id="toastBanner" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none max-w-sm">
+    <div class="bg-ink text-cream px-4 py-3 rounded-2xl shadow-xl border border-stone/30 flex items-center gap-3 text-sm">
+      <span id="toastIcon" class="w-2.5 h-2.5 rounded-full bg-terracotta shrink-0"></span>
+      <span id="toastText">Status message</span>
+    </div>
+  </div>
+
+  <!-- Top Editorial Header -->
+  <header class="sticky top-0 z-40 bg-cream/90 backdrop-blur-md border-b border-stone">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-terracotta text-white flex items-center justify-center shadow-sm font-serif font-bold text-lg">
+Æ
+        </div>
+        <div>
+          <span class="font-serif font-bold tracking-tight text-lg sm:text-xl text-ink block leading-none">AI CONCEPT EXPLAINER</span>
+          <span class="text-[11px] uppercase tracking-widest text-slateMuted font-medium hidden sm:block mt-0.5">Visual • Logical • Interactive Studio</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <span id="headerDomainPill" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sageSoft text-sage border border-sage/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-sage"></span>
+          <span id="headerDomainLabel">Physics &amp; Wave Mechanics</span>
+        </span>
+        <button id="scrollToStudioBtn" class="px-3.5 py-2 rounded-xl bg-sand hover:bg-stone/70 text-ink text-xs sm:text-sm font-semibold transition border border-stone">
+Visual Studio ↓
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Spacious Search Section -->
+  <section class="pt-8 pb-6 sm:pt-12 sm:pb-8 px-4 sm:px-6 lg:px-8 border-b border-stone/80 bg-gradient-to-b from-sand/60 to-cream">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-stone shadow-xs text-xs font-medium text-slateMuted mb-4">
+        <span class="w-2 h-2 rounded-full bg-terracotta animate-pulse"></span>
+Grounded Explanations • Dynamic Diagrams • Gemini 3.1 Flash Image • Live Simulator • AI Video
+      </div>
+      <h1 class="font-serif text-3xl sm:text-5xl font-bold text-ink tracking-tight leading-tight">
+Understand <span class="italic text-terracotta">any</span> concept from first principles.
+      </h1>
+      <p class="mt-3 text-sm sm:text-base text-slateMuted max-w-2xl mx-auto leading-relaxed">
+Enter any topic across mathematics, physics, biology, economics, computer science, or philosophy. The studio dynamically restructures its formulas, diagrams, generative imagery, simulator, and narrated explainer around your query.
+      </p>
+
+      <!-- Spacious Search Bar -->
+      <form id="conceptSearchForm" class="mt-6 sm:mt-8 relative max-w-3xl mx-auto">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-3xl p-2 shadow-lg shadow-ink/5 border-2 border-stone focus-within:border-terracotta transition-colors gap-2">
+          <div class="flex items-center flex-1 px-3 sm:px-4 py-1.5">
+            <svg class="w-5 h-5 text-terracotta shrink-0 mr-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.3-4.3"></path>
+            </svg>
+            <input
+id="conceptInput"
+type="text"
+placeholder="Ask anything... e.g. Fourier Transform, CRISPR Gene Editing, Nash Equilibrium, Stoicism"
+class="w-full bg-transparent text-ink placeholder-slateMuted/70 text-base sm:text-lg font-medium focus:outline-none"
+autocomplete="off"
+required
+            />
+            <button type="button" id="clearInputBtn" title="Clear search" class="hidden text-slateMuted hover:text-ink p-1.5 rounded-lg">
+        ✕
+            </button>
+          </div>
+          <button
+type="submit"
+id="explainSubmitBtn"
+class="px-6 py-3.5 rounded-xl sm:rounded-2xl bg-terracotta hover:bg-terracottaDark active:scale-[0.99] text-white font-semibold text-sm sm:text-base shadow-md shadow-terracotta/25 transition flex items-center justify-center gap-2 shrink-0"
+        >
+            <span id="submitBtnText">Explain Concept</span>
+            <svg id="submitBtnIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Curated Cross-Domain Starter Pills -->
+      <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slateMuted mr-1">Explore Subjects:</span>
+        <button type="button" data-concept="Wave-Particle Duality & Interference" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        🌊 Wave-Particle Duality
+        </button>
+        <button type="button" data-concept="Calculus: Derivatives & Instantaneous Rate of Change" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        📈 Calculus: Derivatives
+        </button>
+        <button type="button" data-concept="CRISPR-Cas9 Gene Editing" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        🧬 CRISPR Gene Editing
+        </button>
+        <button type="button" data-concept="Game Theory: Nash Equilibrium" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        ♟️ Nash Equilibrium
+        </button>
+        <button type="button" data-concept="Neural Network Backpropagation" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        🧠 Backpropagation
+        </button>
+        <button type="button" data-concept="Stoicism & Dichotomy of Control" class="topic-pill px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium bg-white hover:bg-sageSoft hover:text-sage hover:border-sage/30 text-ink border border-stone transition shadow-2xs">
+        🏛️ Stoic Philosophy
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- Concept Header Banner & Adaptive Domain Telemetry -->
+    <div id="conceptBanner" class="bg-white rounded-3xl p-6 sm:p-8 border border-stone shadow-sm">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-3xl">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span id="domainBadge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-sageSoft text-sage border border-sage/20">
+PHYSICS • QUANTUM &amp; OPTICS
+        </span>
+            <span id="modeBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-terracotta/10 text-terracotta border border-terracotta/20">
+Mode: Mathematical Wave &amp; Interference Lab
+            </span>
+            <span id="groundingStatus" class="inline-flex items-center gap-1.5 text-xs text-slateMuted font-medium">
+              <span class="w-2 h-2 rounded-full bg-sage"></span> Verified First-Principles Synthesis
+            </span>
+          </div>
+          <h2 id="conceptTitle" class="font-serif text-2xl sm:text-4xl font-bold text-ink leading-tight">
+Wave-Particle Duality &amp; Interference
+        </h2>
+          <p id="conceptTagline" class="text-slateMuted text-base sm:text-lg leading-relaxed">
+How fundamental quantum entities exhibit both localized particle impacts and delocalized wave interference patterns depending on measurement.
+          </p>
+        </div>
+
+        <!-- Underlying Parameters Quick-Check Strip -->
+        <div class="bg-sand/70 rounded-2xl p-4 border border-stone lg:min-w-[290px] shrink-0">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slateMuted mb-2.5">Active Pedagogical Lenses</div>
+          <div class="grid grid-cols-2 gap-2 text-xs font-medium">
+            <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-stone/70">
+              <span class="text-sage font-bold">✓</span> Theoretical Core
+            </div>
+            <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-stone/70">
+              <span class="text-sage font-bold">✓</span> Logical Deduction
+            </div>
+            <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-stone/70">
+              <span class="text-sage font-bold">✓</span> Visual Analogy
+            </div>
+            <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-stone/70">
+              <span id="lensMathCheck" class="text-sage font-bold">✓</span> <span id="lensMathText">Live Math Sim</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grounded Search Sources (populated dynamically when Google Search grounding returns sources) -->
+      <div id="sourcesContainer" class="hidden mt-5 pt-4 border-t border-stone/70 flex flex-wrap items-center gap-2 text-xs">
+        <span class="font-semibold text-slateMuted uppercase tracking-wider mr-1">Grounded References:</span>
+        <div id="sourcesList" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+
+    <!-- MULTI-PILLAR EDITORIAL TUTORING GRID (No horizontal rectangular tab strips—all dimensions flow harmoniously) -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Pillar 1: Explicit & Theoretical Foundation (7 cols) -->
+      <article class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-stone shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-terracotta">
+              <span class="w-6 h-6 rounded-lg bg-terracotta/10 flex items-center justify-center text-terracotta">01</span>
+Explicit &amp; Theoretical Foundation
+            </span>
+            <span class="text-xs font-mono text-slateMuted">RIGOROUS CORE</span>
+          </div>
+          <div id="theoryContent" class="space-y-4 text-ink/90 text-sm sm:text-base leading-relaxed">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Key Underlying Parameters / Pillars -->
+        <div class="mt-6 pt-5 border-t border-stone/70">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slateMuted mb-3">Underlying Governing Parameters</h4>
+          <div id="parametersGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </article>
+
+      <!-- Pillar 2: Illustrative Analogy & Real-World Intuition (5 cols) -->
+      <aside class="lg:col-span-5 bg-sageSoft/70 rounded-3xl p-6 sm:p-8 border border-sage/25 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-sage">
+              <span class="w-6 h-6 rounded-lg bg-sage text-white flex items-center justify-center">02</span>
+Illustrative Intuition
+            </span>
+            <span class="text-xs font-mono text-sage/80">MENTAL MODEL</span>
+          </div>
+          <h3 id="analogyTitle" class="font-serif text-xl sm:text-2xl font-bold text-ink mb-3">
+Ripples on a Pond vs. Pebbles on Sand
+        </h3>
+          <p id="analogyText" class="text-ink/85 text-sm sm:text-base leading-relaxed">
+            <!-- Populated dynamically -->
+          </p>
+        </div>
+
+        <!-- Real-world grounding callout -->
+        <div class="mt-6 bg-white/90 rounded-2xl p-4 border border-sage/20">
+          <div class="text-xs font-bold uppercase tracking-wider text-sage mb-1">Where You See This In Reality</div>
+          <p id="realWorldApplication" class="text-xs sm:text-sm text-ink/80 leading-relaxed">
+            <!-- Populated dynamically -->
+          </p>
+        </div>
+      </aside>
+
+      <!-- Pillar 3: Logical Step-by-Step First-Principles Deduction (Full Width or Split with Formulas) -->
+      <article id="logicPillarCard" class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-stone shadow-sm">
+        <div class="flex items-center justify-between gap-2 mb-5">
+          <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-ink">
+            <span class="w-6 h-6 rounded-lg bg-sand border border-stone flex items-center justify-center text-ink">03</span>
+Logical First-Principles Chain
+          </span>
+          <span class="text-xs font-mono text-slateMuted">DEDUCTIVE FLOW</span>
+        </div>
+        <div id="logicalStepsList" class="space-y-3.5">
+          <!-- Populated dynamically -->
+        </div>
+      </article>
+
+      <!-- Pillar 4: Authentic Mathematical Formulations / Structural Rules (5 cols - dynamically morphs between Formulas & Formal Axioms) -->
+      <article id="formulaPillarCard" class="lg:col-span-5 bg-ink text-cream rounded-3xl p-6 sm:p-8 shadow-md flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-4">
+            <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-terracotta">
+              <span class="w-6 h-6 rounded-lg bg-terracotta/20 flex items-center justify-center text-terracotta">04</span>
+              <span id="formalSectionLabel">Authentic Equations &amp; Proofs</span>
+            </span>
+            <span id="formalSectionTag" class="text-xs font-mono text-stone/70">FORMALISM</span>
+          </div>
+
+          <div id="formulasContainer" class="space-y-4">
+            <!-- Populated dynamically with KaTeX rendered equations & variable breakdowns -->
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-white/10 text-xs text-stone/80 flex items-center justify-between">
+<span>Verified Symbolic Notation</span>
+          <span id="formulaDomainHint" class="font-mono text-terracotta">λ = h / p</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- VISUAL & INTERACTIVE STUDIO ANCHOR -->
+    <div id="visualStudioSection" class="pt-2 space-y-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-stone pb-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-terracotta">Dynamic Multimodal Studio</span>
+          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-ink mt-1">
+        Interactive Diagrams, Generative Imagery &amp; Live Simulation
+          </h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slateMuted max-w-md">
+        Every diagram, image, simulation curve, and video scene rebuilds automatically for your searched concept.
+        </p>
+      </div>
+
+      <!-- ROW A: Dynamic Concept Architecture Diagram (Interactive SVG) + Adaptive Simulator / Motion Lab -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+        <!-- Dynamic Concept Diagram Window (5 cols) -->
+        <div class="xl:col-span-5 bg-white rounded-3xl p-6 border border-stone shadow-sm flex flex-col">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-sage">Structural Blueprint</span>
+              <h3 id="diagramTitle" class="font-serif text-xl font-bold text-ink">Concept Causal &amp; Structural Map</h3>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-sand text-[11px] font-mono text-slateMuted border border-stone">Interactive SVG</span>
+          </div>
+          <p class="text-xs text-slateMuted mb-3">Click or tap any node below to inspect its causal role in the system.</p>
+
+          <!-- Dynamic SVG Canvas Container -->
+          <div class="relative w-full bg-cream/70 rounded-2xl border border-stone overflow-hidden flex-1 min-h-[300px] flex items-center justify-center">
+            <svg id="conceptDiagramSvg" viewBox="0 0 500 340" class="w-full h-full max-h-[360px] select-none"></svg>
+          </div>
+
+          <!-- Selected Node Inspector -->
+          <div id="nodeInspector" class="mt-3 p-3.5 rounded-2xl bg-sand/80 border border-stone text-xs sm:text-sm">
+            <div class="font-bold text-ink flex items-center justify-between">
+              <span id="inspectorNodeTitle">Select a diagram node</span>
+              <span id="inspectorNodeType" class="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-white text-terracotta border border-stone">NODE</span>
+            </div>
+            <p id="inspectorNodeDesc" class="text-slateMuted mt-1 text-xs leading-relaxed">
+Tap any element in the structural diagram above to examine how it connects to neighboring mechanisms.
+            </p>
+          </div>
+        </div>
+
+        <!-- Adaptive Mathematical Simulator OR Interactive Concept Motion Lab (7 cols) -->
+        <div class="xl:col-span-7 bg-white rounded-3xl p-6 border border-stone shadow-sm flex flex-col">
+          <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="simModeTag" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-terracotta/10 text-terracotta">
+Interactive Math &amp; Physics Simulator
+                </span>
+              </div>
+              <h3 id="simTitle" class="font-serif text-xl sm:text-2xl font-bold text-ink mt-1">
+Double-Slit Wave Interference Lab
+              </h3>
+            </div>
+
+            <!-- Regenerate / Reset Simulator Parameters Button -->
+            <button
+id="regenSimBtn"
+type="button"
+class="px-3.5 py-2 rounded-xl bg-sand hover:bg-terracotta hover:text-white text-ink text-xs font-semibold border border-stone transition flex items-center gap-1.5 shadow-2xs"
+        >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+<span>Regenerate Parameters</span>
+            </button>
+          </div>
+
+          <!-- Responsive HTML5 Simulation Canvas -->
+          <div class="relative w-full rounded-2xl overflow-hidden border border-stone bg-[#181A18] h-[270px] sm:h-[310px]">
+            <canvas id="simCanvas" class="w-full h-full block"></canvas>
+            <!-- Live Telemetry Overlay -->
+            <div id="simLiveReadout" class="absolute top-3 left-3 bg-ink/85 backdrop-blur-xs text-cream px-3 py-1.5 rounded-xl text-[11px] font-mono border border-white/15">
+λ = 520 nm • d = 2.4 μm • Constructive Peaks: 5
+            </div>
+            <div id="simSubHint" class="absolute bottom-3 right-3 bg-ink/75 text-stone px-2.5 py-1 rounded-lg text-[10px] font-mono">
+Drag sliders below to perturb system
+            </div>
+          </div>
+
+          <!-- Dynamic Parameter Sliders Grid -->
+          <div id="simControlsGrid" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-cream/80 p-4 rounded-2xl border border-stone">
+            <!-- Populated dynamically per concept -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW B: TWO DYNAMIC & CINEMATIC AI IMAGE GENERATION WINDOWS (Powered by Gemini 3.1 Flash Image) -->
+      <div class="space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-sage">Gemini 3.1 Flash Image Studio</span>
+            <h3 class="font-serif text-2xl font-bold text-ink">Cinematic &amp; Conceptual AI Visualizations</h3>
+          </div>
+          <span class="text-xs text-slateMuted font-medium">Dynamically synthesized per concept • Never static</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- AI Image Window 1: Cinematic Real-World Visualization -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 border border-stone shadow-sm flex flex-col">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-terracotta">Window I • Cinematic Realism</span>
+                <h4 id="img1Title" class="font-serif text-lg font-bold text-ink">Physical Phenomenon in Action</h4>
+              </div>
+              <button
+id="regenImg1Btn"
+type="button"
+class="px-3 py-1.5 rounded-xl bg-terracotta/10 hover:bg-terracotta text-terracotta hover:text-white text-xs font-semibold transition flex items-center gap-1.5 shrink-0"
+        >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Regenerate</span>
+              </button>
+            </div>
+
+            <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-sand border border-stone">
+              <!-- Loading Skeleton -->
+              <div id="img1Loader" class="absolute inset-0 shimmer-box flex flex-col items-center justify-center p-6 text-center z-10">
+                <div class="w-9 h-9 rounded-full border-3 border-terracotta border-t-transparent animate-spin mb-3"></div>
+                <p class="text-xs font-semibold text-ink">Rendering with Gemini 3.1 Flash Image...</p>
+                <p class="text-[11px] text-slateMuted mt-1">Composing cinematic lighting &amp; physical detail</p>
+              </div>
+              <img id="img1Display" alt="Cinematic AI Concept Visualization" class="w-full h-full object-cover transition-opacity duration-500 opacity-0" />
+            </div>
+
+            <div class="mt-3 bg-cream rounded-xl p-3 border border-stone/80">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-slateMuted mb-0.5">Active Generative Prompt</div>
+              <p id="img1PromptText" class="text-xs text-ink/80 line-clamp-2 italic">
+Initializing cinematic prompt...
+              </p>
+            </div>
+          </div>
+
+          <!-- AI Image Window 2: Artistic & Conceptual Metaphor Illustration -->
+          <div class="bg-white rounded-3xl p-5 sm:p-6 border border-stone shadow-sm flex flex-col">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sage">Window II • Editorial Metaphor</span>
+                <h4 id="img2Title" class="font-serif text-lg font-bold text-ink">Conceptual Intuition Artwork</h4>
+              </div>
+              <button
+id="regenImg2Btn"
+type="button"
+class="px-3 py-1.5 rounded-xl bg-sageSoft hover:bg-sage text-sage hover:text-white text-xs font-semibold transition flex items-center gap-1.5 shrink-0"
+        >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Regenerate</span>
+              </button>
+            </div>
+
+            <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-sand border border-stone">
+              <!-- Loading Skeleton -->
+              <div id="img2Loader" class="absolute inset-0 shimmer-box flex flex-col items-center justify-center p-6 text-center z-10">
+                <div class="w-9 h-9 rounded-full border-3 border-sage border-t-transparent animate-spin mb-3"></div>
+                <p class="text-xs font-semibold text-ink">Painting Conceptual Metaphor...</p>
+                <p class="text-[11px] text-slateMuted mt-1">Synthesizing warm editorial illustration</p>
+              </div>
+              <img id="img2Display" alt="Editorial AI Metaphor Illustration" class="w-full h-full object-cover transition-opacity duration-500 opacity-0" />
+            </div>
+
+            <div class="mt-3 bg-cream rounded-xl p-3 border border-stone/80">
+              <div class="text-[10px] font-mono uppercase tracking-wider text-slateMuted mb-0.5">Active Generative Prompt</div>
+              <p id="img2PromptText" class="text-xs text-ink/80 line-clamp-2 italic">
+Initializing editorial metaphor prompt...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW C: AI VIDEO EXPLAINER WINDOW (Theatrical 16:9 Multi-Scene Animated Explainer + Narration + Regeneration) -->
+      <div class="bg-ink text-cream rounded-3xl p-6 sm:p-8 shadow-xl border border-stone/20">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-terracotta text-white">
+AI Video Explainer
+        </span>
+              <span id="videoDurationBadge" class="text-xs font-mono text-stone/70">4 Scenes • ~24s Motion Storyboard</span>
+            </div>
+            <h3 id="videoTitle" class="font-serif text-2xl sm:text-3xl font-bold text-white mt-1">
+Narrated Visual Walkthrough
+        </h3>
+          </div>
+
+          <!-- Regenerate Video Explainer Button -->
+          <button
+id="regenVideoBtn"
+type="button"
+class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-terracotta text-white text-xs sm:text-sm font-semibold border border-white/15 transition flex items-center gap-2 self-start sm:self-auto"
+        >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span id="regenVideoText">Regenerate Video Explainer</span>
+          </button>
+        </div>
+
+        <!-- 16:9 Theatrical Video Canvas Viewport -->
+        <div class="relative w-full aspect-video max-h-[500px] mx-auto rounded-2xl overflow-hidden bg-[#121412] border border-white/15 shadow-2xl">
+          <canvas id="videoCanvas" class="w-full h-full block"></canvas>
+
+          <!-- Subtitles / Captions Overlay -->
+          <div id="videoCaptionBox" class="absolute bottom-14 left-4 right-4 sm:left-12 sm:right-12 text-center pointer-events-none">
+            <span id="videoCaptionText" class="inline-block bg-black/75 backdrop-blur-xs text-cream px-4 py-2 rounded-xl text-xs sm:text-base font-medium leading-snug border border-white/10 shadow-lg">
+Press Play to launch the narrated multi-scene AI explainer.
+            </span>
+          </div>
+
+          <!-- Scene Pill Indicator -->
+          <div class="absolute top-3 left-3 sm:top-4 sm:left-4 flex items-center gap-2 bg-black/65 backdrop-blur-xs px-3 py-1.5 rounded-full text-xs font-mono border border-white/10">
+            <span id="videoPlayDot" class="w-2 h-2 rounded-full bg-terracotta"></span>
+            <span id="videoSceneIndicator">SCENE 1 / 4</span>
+          </div>
+
+          <!-- Bottom Player Controls Bar -->
+          <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent px-4 py-3 flex items-center gap-3">
+            <button id="videoPlayPauseBtn" type="button" class="w-9 h-9 rounded-full bg-terracotta hover:bg-terracottaDark text-white flex items-center justify-center transition shrink-0" title="Play / Pause Explainer">
+              <svg id="playIcon" class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              <svg id="pauseIcon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+
+            <!-- Interactive Timeline Progress Bar -->
+            <div id="videoProgressTrack" class="flex-1 h-2 bg-white/20 rounded-full overflow-hidden cursor-pointer relative group">
+              <div id="videoProgressBar" class="h-full bg-terracotta rounded-full w-0 transition-all duration-100"></div>
+            </div>
+
+            <span id="videoTimeLabel" class="text-[11px] font-mono text-stone/80 shrink-0">00:00 / 00:24</span>
+
+            <!-- Voiceover Toggle -->
+            <button id="videoVoiceBtn" type="button" class="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-cream flex items-center gap-1.5 shrink-0" title="Toggle AI Voice Narration">
+              <span id="voiceIcon">🔊</span>
+              <span class="hidden sm:inline" id="voiceLabel">Voice On</span>
+            </button>
+
+            <!-- Captions Toggle -->
+            <button id="videoCcBtn" type="button" class="px-2 py-1 rounded-lg bg-terracotta/30 border border-terracotta/50 text-[11px] font-mono font-bold text-white shrink-0" title="Toggle Captions">
+CC
+        </button>
+          </div>
+        </div>
+
+        <!-- Scene Chapters Strip -->
+        <div id="videoChaptersGrid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- Populated dynamically with the 4 storyboard scenes -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 border-t border-stone bg-sand/60 py-6 px-4 text-center text-xs text-slateMuted">
+    <p class="font-medium text-ink">AI Concept Explainer — Dynamic Multimodal Tutoring Studio</p>
+    <p class="mt-1">Powered by Gemini 3 Flash &amp; Gemini 3.1 Flash Image • Adaptive Diagrams, Simulations &amp; Narrated Explainers</p>
+  </footer>
+
+  <script>
+// =========================================================================
+// AI CONCEPT EXPLAINER — CORE APPLICATION ENGINE
+// =========================================================================
+
+    const apiKey = ""; // Runtime-provided Gemini API key
+
+        // Global Application State
+        const appState = {
+currentConcept: "Wave-Particle Duality & Interference",
+data: null,
+selectedNodeIndex: 0,
+// Simulator state
+simParams: {},
+simAnimFrame: null,
+simTime: 0,
+// Video Explainer state
+videoPlaying: false,
+videoProgress: 0, // 0 to 1
+videoDurationSec: 24,
+videoLastTick: null,
+videoAnimFrame: null,
+voiceEnabled: true,
+captionsEnabled: true,
+lastSpokenScene: -1,
+        };
+
+        // -------------------------------------------------------------------------
+        // 1. INITIAL DEFAULT WALKTHROUGH DATA (Instant rich experience on page load)
+        // -------------------------------------------------------------------------
+        const INITIAL_CONCEPT_DATA = {
+conceptTitle: "Wave-Particle Duality & Interference",
+domain: "physics",
+domainDisplay: "PHYSICS • QUANTUM & OPTICS",
+simulatorMode: "math_physics",
+modeBadgeText: "Mode: Mathematical Wave & Interference Lab",
+tagline: "How fundamental quantum entities propagate as delocalized probability waves yet register as discrete, localized particle impacts upon detection.",
+theoryParagraphs: [
+        "In classical physics, waves (such as ripples on water or electromagnetic radiation) and particles (such as billiard balls or electrons in early cathode-ray models) were treated as mutually exclusive categories. Waves spread continuously through space and exhibit interference and diffraction; particles follow localized trajectories and transfer momentum in discrete packets.",
+        "At the quantum scale, experiments such as Thomas Young's double-slit apparatus performed with single electrons and photons reveal that every quantum entity possesses both characteristics simultaneously. While propagating unobserved through space, its state evolves as a complex probability amplitude wave governed by the Schrödinger equation, interfering constructively and destructively with itself across multiple paths.",
+        "However, the moment an interaction extracts 'which-path' information or registers the entity on a detector screen, the wavefunction localizes into a single discrete point impact. Repeated over thousands of individual particles, those localized dots reconstruct the exact continuous interference fringes predicted by wave mechanics."
+        ],
+parameters: [
+        { name: "De Broglie Wavelength (λ)", value: "λ = h / p", desc: "Inversely proportional to particle momentum; governs fringe spacing." },
+        { name: "Path Difference (Δx)", value: "d · sin(θ)", desc: "Determines whether overlapping wavefronts reinforce or cancel." },
+        { name: "Observer Coupling", value: "Which-Path Info", desc: "Measuring slit passage collapses interference into two particle bands." }
+        ],
+analogyTitle: "Ripples Passing Two Harbor Gates vs. Pebbles Hitting Sand",
+analogyText: "Imagine throwing one pebble at a time toward a wall with two narrow harbor gates. Common sense says each pebble passes through either the left gate or the right gate, forming two piles behind them. Instead, each quantum 'pebble' travels like an invisible water wave passing through BOTH gates simultaneously, creating overlapping ripples that cancel in some spots and double in others—yet when it reaches the beach, it still lands as a single, crisp grain of sand.",
+realWorldApplication: "Electron microscopes exploit the tiny de Broglie wavelength of accelerated electrons to image individual atoms at resolutions thousands of times sharper than optical light microscopes.",
+logicalSteps: [
+        { premise: "Premise 1 (Momentum-Wavelength Link)", deduction: "Every quantum object with momentum p carries an associated de Broglie wavelength λ = h / p." },
+        { premise: "Premise 2 (Superposition Across Paths)", deduction: "When encountering two slits separated by distance d ≈ λ, the probability wave splits into two coherent secondary wavelets." },
+        { premise: "Premise 3 (Phase Interference)", deduction: "Where path difference Δx = mλ, amplitudes add (constructive bright fringe); where Δx = (m + ½)λ, amplitudes cancel (destructive dark node)." },
+        { premise: "Conclusion (Quantized Detection)", deduction: "Detection samples |ψ(x)|² discretely—yielding individual particle hits whose statistical envelope forms a wave interference pattern." }
+        ],
+hasFormulas: true,
+formalSectionLabel: "Authentic Equations & Quantum Relations",
+formalSectionTag: "MATHEMATICAL FORMALISM",
+formulaHint: "λ = h / p",
+formulas: [
+        {
+label: "De Broglie Matter-Wave Relation",
+latex: "\\lambda = \\frac{h}{p} = \\frac{h}{m v}",
+variables: "λ: wavelength, h: Planck's constant (6.626×10⁻³⁴ J·s), p: momentum"
+        },
+        {
+label: "Double-Slit Constructive Interference",
+latex: "d \\sin(\\theta) = m\\lambda, \\quad m \\in \\mathbb{Z}",
+variables: "d: slit separation, θ: fringe angle, m: interference order"
+        },
+        {
+label: "Born Probability Density",
+latex: "P(x) = |\\psi_1(x) + \\psi_2(x)|^2",
+variables: "ψ₁, ψ₂: complex probability amplitudes from Slit 1 and Slit 2"
+        }
+        ],
+diagramTitle: "Double-Slit Quantum Measurement Architecture",
+diagramNodes: [
+        { id: "n1", label: "Coherent Source", type: "EMITTER", x: 80, y: 170, desc: "Emits single photons or electrons one at a time with well-defined momentum p and wavelength λ." },
+        { id: "n2", label: "Dual-Slit Barrier", type: "SUPERPOSITION", x: 245, y: 85, desc: "Splits the incident wavefunction into two phase-locked paths: ψ₁ (upper slit) and ψ₂ (lower slit)." },
+        { id: "n3", label: "Which-Path Sensor", type: "PERTURBATION", x: 245, y: 255, desc: "Optional detector. When active, entanglement destroys phase coherence and erases interference fringes." },
+        { id: "n4", label: "Interference Screen", type: "COLLAPSE", x: 420, y: 170, desc: "Records discrete particle flashes distributed according to P(x) = |ψ₁ + ψ₂|²." }
+        ],
+diagramEdges: [
+        { from: "n1", to: "n2", label: "ψ(x,t)" },
+        { from: "n1", to: "n3", label: "coupled?" },
+        { from: "n2", to: "n4", label: "ψ₁ + ψ₂" },
+        { from: "n3", to: "n4", label: "|ψ₁|² + |ψ₂|²" }
+        ],
+simConfig: {
+title: "Interactive Double-Slit Wave Interference Lab",
+formulaType: "wave_interference",
+controls: [
+        { id: "wavelength", label: "Wavelength (λ)", min: 20, max: 90, step: 1, default: 48, unit: "nm×10" },
+        { id: "slitDist", label: "Slit Separation (d)", min: 30, max: 140, step: 2, default: 80, unit: "μm" },
+        { id: "observer", label: "Observer Measurement", min: 0, max: 100, step: 5, default: 0, unit: "%" }
+        ]
+        },
+image1Prompt: "Cinematic scientific macro photography of a futuristic quantum optics laboratory table in warm golden-hour ambient light, a glowing emerald-terracotta laser beam splitting through precision brass double-slit apertures and casting crisp luminous interference fringes onto a frosted glass sensor screen, shallow depth of field, 8k editorial photography, photorealistic",
+image2Prompt: "Editorial fine-art scientific illustration on warm cream textured paper with terracotta, forest sage green, and deep charcoal ink: delicate concentric water ripples passing through two stone arches and transforming into golden luminous sand particles on the far shore, mid-century modern botanical science aesthetic, clean composition",
+videoStoryboard: {
+title: "Wave-Particle Duality in 4 Visual Chapters",
+scenes: [
+        {
+title: "1. The Classical Paradox",
+narration: "In our everyday world, particles like marbles follow one path, while waves like ocean ripples spread everywhere at once.",
+visualStyle: "split_duality",
+accentColor: "#C85A32",
+keyMetric: "Particle vs. Wave"
+        },
+        {
+title: "2. Entering the Double Slit",
+narration: "Fire a single electron at two narrow slits. Unobserved, it travels as a de Broglie probability wave through both openings simultaneously.",
+visualStyle: "wave_propagation",
+accentColor: "#2E5A44",
+keyMetric: "λ = h / p"
+        },
+        {
+title: "3. Constructive & Destructive Fringes",
+narration: "Where crests meet crests, probability amplifies into bright fringes. Where crests meet troughs, the electron never lands.",
+visualStyle: "interference_bars",
+accentColor: "#E09F3E",
+keyMetric: "d·sin(θ) = mλ"
+        },
+        {
+title: "4. The Act of Observation",
+narration: "Place a detector at the slits to see which path it took, and the wave collapses—leaving only two plain particle bands.",
+visualStyle: "collapse_transition",
+accentColor: "#C85A32",
+keyMetric: "P(x) = |ψ|²"
+        }
+        ]
+        }
+        };
+
+// -------------------------------------------------------------------------
+// 2. UTILITY FUNCTIONS (Toast notifications, Exponential Backoff Fetch)
+// -------------------------------------------------------------------------
+let toastTimeout = null;
+function showToast(message, type = "info") {
+      const banner = document.getElementById("toastBanner");
+      const text = document.getElementById("toastText");
+      const icon = document.getElementById("toastIcon");
+    text.textContent = message;
+    icon.className = `w-2.5 h-2.5 rounded-full shrink-0 ${
+        type === "error" ? "bg-red-500" : type === "success" ? "bg-sage" : "bg-terracotta"
+    }`;
+    banner.classList.remove("translate-y-24", "opacity-0");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+            banner.classList.add("translate-y-24", "opacity-0");
+      }, 3600);
+}
+
+async function fetchWithBackoff(url, options, maxRetries = 4) {
+    let delay = 1000;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, options);
+            if (!response.ok) {
+                if (response.status === 429 || response.status >= 500) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            const errText = await response.text();
+                throw new Error(`API Error ${response.status}: ${errText}`);
+            }
+            return await response.json();
+        } catch (err) {
+            if (attempt === maxRetries) throw err;
+            await new Promise((res) => setTimeout(res, delay));
+            delay *= 2;
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
+// 3. GEMINI API INTEGRATION: GROUNDED STRUCTURED EXPLANATION
+// -------------------------------------------------------------------------
+async function fetchConceptExplanation(conceptQuery) {
+      const systemInstruction = `You are an elite polymath tutor and visual educator for "AI CONCEPT EXPLAINER".
+            Given ANY user concept (from mathematics, physics, biology, computer science, economics, philosophy, history, art, etc.), synthesize a rigorous, accurate, deeply intuitive multimodal curriculum.
+            Adapt the structure and simulator formulaType strictly to the subject matter:
+    - For mathematics/calculus/algebra/statistics: set simulatorMode="math_physics" and choose formulaType from ["function_graph", "derivative_tangent", "wave_interference", "exponential_growth", "orbit_gravity", "supply_demand", "neural_activation"].
+    - For physics/engineering/astronomy: set simulatorMode="math_physics" and choose the matching physics/math formulaType.
+            - For biology/chemistry/computer_science/economics: set simulatorMode="math_physics" if quantitative curves apply (e.g., supply_demand, exponential_growth, neural_activation), or "concept_dynamics" for qualitative systems.
+    - For philosophy/humanities/history/literature/psychology: set simulatorMode="concept_dynamics" and set formulaType="concept_flow" (interactive causal node-and-tension motion explorer), and set hasFormulas=false (providing foundational principles/axioms instead of equations).
+
+    Return ONLY valid JSON matching the exact schema requested.`;
+
+      const userPrompt = `Explain the concept "${conceptQuery}" thoroughly across theoretical, logical, illustrative, mathematical/structural, diagram, cinematic image prompt, and 4-scene animated video storyboard dimensions. Ensure all facts are authentic and verified.`;
+
+      const responseSchema = {
+            type: "OBJECT",
+            properties: {
+        conceptTitle: { type: "STRING" },
+        domain: {
+            type: "STRING",
+            enum: ["mathematics", "physics", "biology", "computer_science", "economics", "philosophy_humanities", "general"]
+        },
+        domainDisplay: { type: "STRING" },
+        simulatorMode: {
+            type: "STRING",
+            enum: ["math_physics", "concept_dynamics"]
+        },
+        modeBadgeText: { type: "STRING" },
+        tagline: { type: "STRING" },
+        theoryParagraphs: {
+            type: "ARRAY",
+                    items: { type: "STRING" }
+        },
+        parameters: {
+            type: "ARRAY",
+                    items: {
+                type: "OBJECT",
+                        properties: {
+                    name: { type: "STRING" },
+                    value: { type: "STRING" },
+                    desc: { type: "STRING" }
+                },
+                required: ["name", "value", "desc"]
+            }
+        },
+        analogyTitle: { type: "STRING" },
+        analogyText: { type: "STRING" },
+        realWorldApplication: { type: "STRING" },
+        logicalSteps: {
+            type: "ARRAY",
+                    items: {
+                type: "OBJECT",
+                        properties: {
+                    premise: { type: "STRING" },
+                    deduction: { type: "STRING" }
+                },
+                required: ["premise", "deduction"]
+            }
+        },
+        hasFormulas: { type: "BOOLEAN" },
+        formalSectionLabel: { type: "STRING" },
+        formalSectionTag: { type: "STRING" },
+        formulaHint: { type: "STRING" },
+        formulas: {
+            type: "ARRAY",
+                    items: {
+                type: "OBJECT",
+                        properties: {
+                    label: { type: "STRING" },
+                    latex: { type: "STRING" },
+                    variables: { type: "STRING" }
+                },
+                required: ["label", "latex", "variables"]
+            }
+        },
+        diagramTitle: { type: "STRING" },
+        diagramNodes: {
+            type: "ARRAY",
+                    items: {
+                type: "OBJECT",
+                        properties: {
+                    id: { type: "STRING" },
+                    label: { type: "STRING" },
+                    type: { type: "STRING" },
+                    x: { type: "NUMBER" },
+                    y: { type: "NUMBER" },
+                    desc: { type: "STRING" }
+                },
+                required: ["id", "label", "type", "x", "y", "desc"]
+            }
+        },
+        diagramEdges: {
+            type: "ARRAY",
+                    items: {
+                type: "OBJECT",
+                        properties: {
+                    from: { type: "STRING" },
+                    to: { type: "STRING" },
+                    label: { type: "STRING" }
+                },
+                required: ["from", "to", "label"]
+            }
+        },
+        simConfig: {
+            type: "OBJECT",
+                    properties: {
+                title: { type: "STRING" },
+                formulaType: {
+                    type: "STRING",
+                    enum: [
+                    "wave_interference",
+                            "derivative_tangent",
+                            "function_graph",
+                            "exponential_growth",
+                            "orbit_gravity",
+                            "supply_demand",
+                            "neural_activation",
+                            "concept_flow"
+                ]
+                },
+                controls: {
+                    type: "ARRAY",
+                            items: {
+                        type: "OBJECT",
+                                properties: {
+                            id: { type: "STRING" },
+                            label: { type: "STRING" },
+                            min: { type: "NUMBER" },
+                            max: { type: "NUMBER" },
+                            step: { type: "NUMBER" },
+                            default: { type: "NUMBER" },
+                            unit: { type: "STRING" }
+                        },
+                        required: ["id", "label", "min", "max", "step", "default", "unit"]
+                    }
+                }
+            },
+            required: ["title", "formulaType", "controls"]
+        },
+        image1Prompt: { type: "STRING" },
+        image2Prompt: { type: "STRING" },
+        videoStoryboard: {
+            type: "OBJECT",
+                    properties: {
+                title: { type: "STRING" },
+                scenes: {
+                    type: "ARRAY",
+                            items: {
+                        type: "OBJECT",
+                                properties: {
+                            title: { type: "STRING" },
+                            narration: { type: "STRING" },
+                            visualStyle: {
+                                type: "STRING",
+                                enum: ["split_duality", "wave_propagation", "interference_bars", "collapse_transition", "network_pulse", "geometric_orbit"]
+                            },
+                            accentColor: { type: "STRING" },
+                            keyMetric: { type: "STRING" }
+                        },
+                        required: ["title", "narration", "visualStyle", "accentColor", "keyMetric"]
+                    }
+                }
+            },
+            required: ["title", "scenes"]
+        }
+    },
+    required: [
+    "conceptTitle",
+            "domain",
+            "domainDisplay",
+            "simulatorMode",
+            "modeBadgeText",
+            "tagline",
+            "theoryParagraphs",
+            "parameters",
+            "analogyTitle",
+            "analogyText",
+            "realWorldApplication",
+            "logicalSteps",
+            "hasFormulas",
+            "formalSectionLabel",
+            "formalSectionTag",
+            "formulaHint",
+            "formulas",
+            "diagramTitle",
+            "diagramNodes",
+            "diagramEdges",
+            "simConfig",
+            "image1Prompt",
+            "image2Prompt",
+            "videoStoryboard"
+        ]
+      };
+
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+      const payload = {
+            contents: [{ parts: [{ text: userPrompt }] }],
+    systemInstruction: { parts: [{ text: systemInstruction }] },
+    tools: [{ google_search: {} }],
+    generationConfig: {
+        responseMimeType: "application/json",
+                responseSchema: responseSchema
+    }
+      };
+
+      const result = await fetchWithBackoff(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+      });
+
+      const candidate = result.candidates?.[0];
+      const rawText = candidate?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error("Empty response from Gemini");
+
+      const parsed = JSON.parse(rawText);
+
+    // Extract Google Search grounding sources if available
+    let sources = [];
+      const groundingMeta = candidate.groundingMetadata;
+    if (groundingMeta?.groundingAttributions) {
+        sources = groundingMeta.groundingAttributions
+                .map((attr) => ({ uri: attr.web?.uri, title: attr.web?.title }))
+          .filter((s) => s.uri && s.title);
+    }
+    parsed._sources = sources;
+    return parsed;
+}
+
+// -------------------------------------------------------------------------
+// 4. GEMINI 3.1 FLASH IMAGE GENERATION (Dynamic Windows I & II)
+// -------------------------------------------------------------------------
+async function generateDynamicImage(windowIndex, customPrompt, variationSeed = "") {
+      const loader = document.getElementById(`img${windowIndex}Loader`);
+      const imgEl = document.getElementById(`img${windowIndex}Display`);
+      const promptEl = document.getElementById(`img${windowIndex}PromptText`);
+
+    loader.classList.remove("hidden");
+    imgEl.classList.add("opacity-0");
+
+      const finalPrompt = variationSeed
+            ? `${customPrompt}. Visual variation style: ${variationSeed}, no embedded text labels.`
+        : `${customPrompt}, high aesthetic fidelity, no messy text overlays.`;
+
+    promptEl.textContent = finalPrompt;
+
+    try {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${apiKey}`;
+        const payload = {
+                contents: [
+        {
+            role: "user",
+                    parts: [{ text: finalPrompt }]
+        }
+          ],
+        generationConfig: {
+            responseModalities: ["IMAGE"],
+            imageConfig: { aspectRatio: "16:9" }
+        }
+        };
+
+        const result = await fetchWithBackoff(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+        });
+
+        const part = result?.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
+        if (!part || !part.inlineData?.data) {
+            throw new Error("No image payload returned");
+        }
+
+        const mimeType = part.inlineData.mimeType || "image/png";
+        imgEl.src = `data:${mimeType};base64,${part.inlineData.data}`;
+        imgEl.onload = () => {
+                loader.classList.add("hidden");
+        imgEl.classList.remove("opacity-0");
+        };
+    } catch (err) {
+        // Fallback procedural high-res editorial canvas render if image endpoint throttles
+        const fallbackUrl = renderProceduralFallbackArt(windowIndex, appState.currentConcept);
+        imgEl.src = fallbackUrl;
+        imgEl.onload = () => {
+                loader.classList.add("hidden");
+        imgEl.classList.remove("opacity-0");
+        };
+    }
+}
+
+// Procedural fallback artwork generator (never leaves a broken image)
+function renderProceduralFallbackArt(windowIndex, title) {
+      const c = document.createElement("canvas");
+    c.width = 960;
+    c.height = 540;
+      const ctx = c.getContext("2d");
+
+      const grad = ctx.createLinearGradient(0, 0, 960, 540);
+    if (windowIndex === 1) {
+        grad.addColorStop(0, "#1E201E");
+        grad.addColorStop(0.5, "#2E5A44");
+        grad.addColorStop(1, "#C85A32");
+    } else {
+        grad.addColorStop(0, "#F7F3EB");
+        grad.addColorStop(0.5, "#E3EDE8");
+        grad.addColorStop(1, "#EFE9DD");
+    }
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 960, 540);
+
+    // Generative geometric art
+    for (let i = 0; i < 18; i++) {
+        ctx.beginPath();
+        ctx.arc(
+                240 + i * 28,
+                270 + Math.sin(i * 0.6 + windowIndex) * 70,
+                35 + i * 7,
+                0,
+                Math.PI * 2
+        );
+        ctx.strokeStyle =
+                windowIndex === 1
+                        ? `rgba(247, 243, 235, ${0.12 + (i % 4) * 0.05})`
+            : `rgba(200, 90, 50, ${0.18 + (i % 3) * 0.07})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = windowIndex === 1 ? "#F7F3EB" : "#1E201E";
+    ctx.font = "600 26px Fraunces, Georgia, serif";
+    ctx.fillText(title.slice(0, 44), 48, 465);
+    ctx.font = "500 14px Plus Jakarta Sans, sans-serif";
+    ctx.fillStyle = windowIndex === 1 ? "#DED7C8" : "#5C615C";
+    ctx.fillText(
+            windowIndex === 1 ? "Cinematic Generative Visualization" : "Editorial Conceptual Metaphor",
+            48,
+            495
+    );
+    return c.toDataURL("image/png");
+}
+
+// -------------------------------------------------------------------------
+// 5. REGENERATE VIDEO STORYBOARD VIA GEMINI
+// -------------------------------------------------------------------------
+async function regenerateVideoExplainer() {
+      const btn = document.getElementById("regenVideoBtn");
+      const btnText = document.getElementById("regenVideoText");
+    btn.disabled = true;
+    btnText.textContent = "Scripting Fresh Scenes...";
+    stopVideoPlayback();
+
+    try {
+        const prompt = `Create a brand-new, fresh 4-scene animated educational video explainer storyboard for the concept "${appState.currentConcept}". Use a different narrative angle or fresh visual metaphor than before. Return JSON with title and 4 scenes (each having title, narration under 26 words, visualStyle from ["split_duality", "wave_propagation", "interference_bars", "collapse_transition", "network_pulse", "geometric_orbit"], accentColor hex, and short keyMetric).`;
+
+        const schema = {
+                type: "OBJECT",
+                properties: {
+            title: { type: "STRING" },
+            scenes: {
+                type: "ARRAY",
+                        items: {
+                    type: "OBJECT",
+                            properties: {
+                        title: { type: "STRING" },
+                        narration: { type: "STRING" },
+                        visualStyle: {
+                            type: "STRING",
+                            enum: ["split_duality", "wave_propagation", "interference_bars", "collapse_transition", "network_pulse", "geometric_orbit"]
+                        },
+                        accentColor: { type: "STRING" },
+                        keyMetric: { type: "STRING" }
+                    },
+                    required: ["title", "narration", "visualStyle", "accentColor", "keyMetric"]
+                }
+            }
+        },
+        required: ["title", "scenes"]
+        };
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const result = await fetchWithBackoff(apiUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+            responseMimeType: "application/json",
+                    responseSchema: schema
+        }
+          })
+        });
+
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const newStoryboard = JSON.parse(text);
+            appState.data.videoStoryboard = newStoryboard;
+            renderVideoChapters(newStoryboard);
+            appState.videoProgress = 0;
+            appState.lastSpokenScene = -1;
+            drawVideoFrame(0);
+            showToast("Fresh AI Video Explainer generated!", "success");
+            startVideoPlayback();
+        }
+    } catch (e) {
+        showToast("Could not regenerate video script right now.", "error");
+    } finally {
+        btn.disabled = false;
+        btnText.textContent = "Regenerate Video Explainer";
+    }
+}
+
+// -------------------------------------------------------------------------
+// 6. UI RENDERERS (Editorial Pillars, Formulas, Interactive SVG Diagram)
+// -------------------------------------------------------------------------
+function renderConceptUI(data, triggerImageGen = true) {
+    appState.data = data;
+    appState.currentConcept = data.conceptTitle;
+    appState.selectedNodeIndex = 0;
+
+    // Top & Banner Badges
+    document.getElementById("headerDomainLabel").textContent = data.domainDisplay;
+    document.getElementById("domainBadge").textContent = data.domainDisplay;
+    document.getElementById("modeBadge").textContent = data.modeBadgeText;
+    document.getElementById("conceptTitle").textContent = data.conceptTitle;
+    document.getElementById("conceptTagline").textContent = data.tagline;
+
+      const isMathMode = data.simulatorMode === "math_physics";
+    document.getElementById("lensMathText").textContent = isMathMode ? "Live Math Sim" : "Motion Dynamics";
+    document.getElementById("simModeTag").textContent = isMathMode
+            ? "Interactive Math & Physics Simulator"
+            : "Interactive Concept Dynamics & Motion Lab";
+
+    // Grounding Sources
+      const sourcesContainer = document.getElementById("sourcesContainer");
+      const sourcesList = document.getElementById("sourcesList");
+    if (data._sources && data._sources.length > 0) {
+        sourcesContainer.classList.remove("hidden");
+        sourcesList.innerHTML = data._sources
+                .slice(0, 4)
+                .map(
+                        (s) =>
+                        `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="px-2.5 py-1 rounded-lg bg-sand hover:bg-sageSoft text-ink hover:text-sage border border-stone transition truncate max-w-[220px]">${escapeHtml(
+                s.title
+        )} ↗</a>`
+          )
+          .join("");
+    } else {
+        sourcesContainer.classList.add("hidden");
+    }
+
+    // Pillar 1: Theoretical Core
+      const theoryEl = document.getElementById("theoryContent");
+    theoryEl.innerHTML = (data.theoryParagraphs || [])
+        .map((p) => `<p>${escapeHtml(p)}</p>`)
+        .join("");
+
+    // Governing Parameters
+      const paramsGrid = document.getElementById("parametersGrid");
+    paramsGrid.innerHTML = (data.parameters || [])
+        .slice(0, 3)
+            .map(
+                    (param) => `
+            <div class="bg-cream rounded-2xl p-3.5 border border-stone/80">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slateMuted">${escapeHtml(param.name)}</div>
+            <div class="font-mono text-sm font-semibold text-terracotta mt-1">${escapeHtml(param.value)}</div>
+            <p class="text-xs text-ink/80 mt-1 leading-snug">${escapeHtml(param.desc)}</p>
+            </div>
+        `
+        )
+        .join("");
+
+    // Pillar 2: Illustrative Analogy
+    document.getElementById("analogyTitle").textContent = data.analogyTitle;
+    document.getElementById("analogyText").textContent = data.analogyText;
+    document.getElementById("realWorldApplication").textContent = data.realWorldApplication;
+
+    // Pillar 3: Logical Step-by-Step Chain
+      const logicList = document.getElementById("logicalStepsList");
+    logicList.innerHTML = (data.logicalSteps || [])
+        .map(
+            (step, idx) => `
+          <div class="flex items-start gap-3.5 p-3.5 rounded-2xl bg-cream/80 border border-stone/80">
+            <div class="w-7 h-7 rounded-xl bg-sage text-white font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+            ${idx + 1}
+            </div>
+            <div>
+            <div class="text-xs font-bold uppercase tracking-wider text-sage">${escapeHtml(step.premise)}</div>
+            <p class="text-sm text-ink/90 mt-0.5 leading-relaxed">${escapeHtml(step.deduction)}</p>
+            </div>
+            </div>
+        `
+        )
+        .join("");
+
+    // Pillar 4: Authentic Formulas / Axioms
+    document.getElementById("formalSectionLabel").textContent =
+            data.formalSectionLabel || (data.hasFormulas ? "Authentic Equations & Proofs" : "Foundational Principles & Axioms");
+    document.getElementById("formalSectionTag").textContent = data.formalSectionTag || "FORMALISM";
+    document.getElementById("formulaDomainHint").textContent = data.formulaHint || "";
+
+      const formulasContainer = document.getElementById("formulasContainer");
+    formulasContainer.innerHTML = (data.formulas || [])
+        .map((f, idx) => {
+          const mathId = `katex_eq_${idx}`;
+    return `
+            <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
+            <div class="text-xs font-semibold text-stone/80 mb-1.5">${escapeHtml(f.label)}</div>
+            <div id="${mathId}" class="text-base sm:text-lg text-white overflow-x-auto py-1 font-mono"></div>
+            <div class="text-[11px] text-stone/70 mt-1.5 leading-snug">${escapeHtml(f.variables)}</div>
+            </div>
+          `;
+        })
+        .join("");
+
+    // Render KaTeX cleanly if available
+    (data.formulas || []).forEach((f, idx) => {
+        const el = document.getElementById(`katex_eq_${idx}`);
+    if (!el) return;
+    if (window.katex && data.hasFormulas) {
+        try {
+            katex.render(f.latex, el, { throwOnError: false, displayMode: false });
+        } catch (_) {
+            el.textContent = f.latex;
+        }
+    } else {
+        el.textContent = f.latex;
+    }
+      });
+
+    // Render Interactive SVG Concept Diagram
+    document.getElementById("diagramTitle").textContent = data.diagramTitle;
+    renderConceptDiagram(data.diagramNodes || [], data.diagramEdges || []);
+
+    // Setup & Start Interactive Simulator
+    setupSimulator(data.simConfig);
+
+    // Setup Video Explainer Storyboard
+    renderVideoChapters(data.videoStoryboard);
+    appState.videoProgress = 0;
+    appState.lastSpokenScene = -1;
+    stopVideoPlayback();
+    drawVideoFrame(0);
+
+    // Update Image Window Titles & Trigger Gemini 3.1 Flash Image Generation
+    document.getElementById("img1Title").textContent = `${data.conceptTitle} — In Action`;
+    document.getElementById("img2Title").textContent = `${data.analogyTitle}`;
+    if (triggerImageGen) {
+        generateDynamicImage(1, data.image1Prompt);
+        generateDynamicImage(2, data.image2Prompt);
+    }
+}
+
+function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+            .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+}
+
+// -------------------------------------------------------------------------
+// 7. DYNAMIC INTERACTIVE SVG DIAGRAM ENGINE
+// -------------------------------------------------------------------------
+function renderConceptDiagram(nodes, edges) {
+      const svg = document.getElementById("conceptDiagramSvg");
+    svg.innerHTML = "";
+
+    // Arrowhead marker definition
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+    defs.innerHTML = `
+        <marker id="editorialArrow" markerWidth="10" markerHeight="7" refX="26" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#C85A32" />
+            </marker>
+      `;
+    svg.appendChild(defs);
+
+      const nodeMap = {};
+    nodes.forEach((n, idx) => {
+            // Clamp coordinates safely inside 500x340 viewBox
+            n._cx = Math.max(75, Math.min(425, n.x || 100 + idx * 100));
+    n._cy = Math.max(55, Math.min(285, n.y || 170));
+    nodeMap[n.id] = n;
+      });
+
+    // Draw curved edges with labels
+    edges.forEach((edge) => {
+        const source = nodeMap[edge.from];
+        const target = nodeMap[edge.to];
+    if (!source || !target) return;
+
+        const midX = (source._cx + target._cx) / 2;
+        const midY = (source._cy + target._cy) / 2 - 18;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${source._cx} ${source._cy} Q ${midX} ${midY} ${target._cx} ${target._cy}`);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#C85A32");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-dasharray", "5,4");
+    path.setAttribute("marker-end", "url(#editorialArrow)");
+    svg.appendChild(path);
+
+    if (edge.label) {
+          const pillBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          const labelWidth = Math.min(110, edge.label.length * 6.5 + 14);
+        pillBg.setAttribute("x", midX - labelWidth / 2);
+        pillBg.setAttribute("y", midY - 10);
+        pillBg.setAttribute("width", labelWidth);
+        pillBg.setAttribute("height", 18);
+        pillBg.setAttribute("rx", 9);
+        pillBg.setAttribute("fill", "#FFFFFF");
+        pillBg.setAttribute("stroke", "#DED7C8");
+        svg.appendChild(pillBg);
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", midX);
+        text.setAttribute("y", midY + 2.5);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "10");
+        text.setAttribute("font-family", "JetBrains Mono, monospace");
+        text.setAttribute("fill", "#5C615C");
+        text.textContent = edge.label.slice(0, 16);
+        svg.appendChild(text);
+    }
+      });
+
+    // Draw interactive nodes
+    nodes.forEach((node, idx) => {
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.setAttribute("class", "diagram-node");
+
+        const isSelected = idx === appState.selectedNodeIndex;
+        const boxW = 128;
+        const boxH = 52;
+
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", node._cx - boxW / 2);
+    rect.setAttribute("y", node._cy - boxH / 2);
+    rect.setAttribute("width", boxW);
+    rect.setAttribute("height", boxH);
+    rect.setAttribute("rx", 14);
+    rect.setAttribute("fill", isSelected ? "#2E5A44" : "#FFFFFF");
+    rect.setAttribute("stroke", isSelected ? "#2E5A44" : "#C85A32");
+    rect.setAttribute("stroke-width", isSelected ? "2.5" : "1.8");
+
+        const typeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    typeText.setAttribute("x", node._cx);
+    typeText.setAttribute("y", node._cy - 7);
+    typeText.setAttribute("text-anchor", "middle");
+    typeText.setAttribute("font-size", "9");
+    typeText.setAttribute("font-weight", "700");
+    typeText.setAttribute("font-family", "JetBrains Mono, monospace");
+    typeText.setAttribute("fill", isSelected ? "#E3EDE8" : "#C85A32");
+    typeText.textContent = (node.type || "STAGE").slice(0, 14);
+
+        const labelText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    labelText.setAttribute("x", node._cx);
+    labelText.setAttribute("y", node._cy + 11);
+    labelText.setAttribute("text-anchor", "middle");
+    labelText.setAttribute("font-size", "11.5");
+    labelText.setAttribute("font-weight", "700");
+    labelText.setAttribute("font-family", "Plus Jakarta Sans, sans-serif");
+    labelText.setAttribute("fill", isSelected ? "#FFFFFF" : "#1E201E");
+    labelText.textContent = node.label.length > 17 ? node.label.slice(0, 16) + "…" : node.label;
+
+    g.appendChild(rect);
+    g.appendChild(typeText);
+    g.appendChild(labelText);
+
+    g.addEventListener("click", () => {
+            appState.selectedNodeIndex = idx;
+    renderConceptDiagram(nodes, edges);
+    updateNodeInspector(node);
+        });
+
+    svg.appendChild(g);
+      });
+
+    if (nodes[appState.selectedNodeIndex]) {
+        updateNodeInspector(nodes[appState.selectedNodeIndex]);
+    }
+}
+
+function updateNodeInspector(node) {
+    document.getElementById("inspectorNodeTitle").textContent = node.label;
+    document.getElementById("inspectorNodeType").textContent = node.type || "MECHANISM";
+    document.getElementById("inspectorNodeDesc").textContent = node.desc;
+}
+
+// -------------------------------------------------------------------------
+// 8. ADAPTIVE MATHEMATICAL SIMULATOR & CONCEPT MOTION ENGINE (HTML5 Canvas)
+// -------------------------------------------------------------------------
+function setupSimulator(simConfig) {
+    if (!simConfig) return;
+    document.getElementById("simTitle").textContent = simConfig.title;
+
+    // Ensure at least 3 controls exist
+      const controls = (simConfig.controls && simConfig.controls.length > 0)
+            ? simConfig.controls.slice(0, 3)
+            : [
+    { id: "paramA", label: "Primary Amplitude / Factor", min: 10, max: 100, step: 1, default: 55, unit: "%" },
+    { id: "paramB", label: "Frequency / Rate", min: 1, max: 10, step: 0.5, default: 4, unit: "Hz" },
+    { id: "paramC", label: "Damping / Coupling", min: 0, max: 100, step: 5, default: 25, unit: "%" }
+          ];
+
+    appState.simParams = {};
+    controls.forEach((c) => {
+            appState.simParams[c.id] = c.default;
+      });
+
+      const controlsGrid = document.getElementById("simControlsGrid");
+    controlsGrid.innerHTML = controls
+            .map(
+                    (ctrl) => `
+            <div>
+            <div class="flex items-center justify-between text-xs mb-1.5">
+            <label for="slider_${ctrl.id}" class="font-semibold text-ink truncate pr-2">${escapeHtml(ctrl.label)}</label>
+            <span id="val_${ctrl.id}" class="font-mono font-bold text-terracotta shrink-0">${ctrl.default} ${escapeHtml(ctrl.unit)}</span>
+            </div>
+            <input
+    id="slider_${ctrl.id}"
+    type="range"
+    min="${ctrl.min}"
+    max="${ctrl.max}"
+    step="${ctrl.step}"
+    value="${ctrl.default}"
+    class="studio-slider"
+            />
+            </div>
+        `
+        )
+        .join("");
+
+    controls.forEach((ctrl) => {
+        const slider = document.getElementById(`slider_${ctrl.id}`);
+        const valSpan = document.getElementById(`val_${ctrl.id}`);
+    slider.addEventListener("input", (e) => {
+          const val = parseFloat(e.target.value);
+    appState.simParams[ctrl.id] = val;
+    valSpan.textContent = `${val} ${ctrl.unit}`;
+        });
+      });
+
+    startSimulatorLoop(simConfig.formulaType || "wave_interference", controls);
+}
+
+function regenerateSimulatorParameters() {
+      const simConfig = appState.data?.simConfig;
+    if (!simConfig || !simConfig.controls) return;
+    simConfig.controls.forEach((ctrl) => {
+        const span = ctrl.max - ctrl.min;
+        const raw = ctrl.min + (0.2 + Math.random() * 0.65) * span;
+        const stepped = Math.round(raw / ctrl.step) * ctrl.step;
+        const clamped = Math.max(ctrl.min, Math.min(ctrl.max, Number(stepped.toFixed(2))));
+    appState.simParams[ctrl.id] = clamped;
+        const slider = document.getElementById(`slider_${ctrl.id}`);
+        const valSpan = document.getElementById(`val_${ctrl.id}`);
+    if (slider) slider.value = clamped;
+    if (valSpan) valSpan.textContent = `${clamped} ${ctrl.unit}`;
+      });
+    showToast("Simulator parameters perturbed to a new state!", "info");
+}
+
+function startSimulatorLoop(formulaType, controls) {
+    if (appState.simAnimFrame) cancelAnimationFrame(appState.simAnimFrame);
+      const canvas = document.getElementById("simCanvas");
+      const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resizeCanvas();
+
+    function renderFrame() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+        appState.simTime += 0.035;
+
+        // Clear warm charcoal studio backdrop
+        ctx.fillStyle = "#181A18";
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw subtle coordinate grid
+        ctx.strokeStyle = "rgba(222, 215, 200, 0.08)";
+        ctx.lineWidth = 1;
+        const gridStep = 36;
+        for (let x = 0; x < w; x += gridStep) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+        }
+        for (let y = 0; y < h; y += gridStep) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+        }
+
+        const vals = controls.map((c) => appState.simParams[c.id] ?? c.default);
+        const norm0 = (vals[0] - controls[0].min) / (controls[0].max - controls[0].min || 1);
+        const norm1 = controls[1] ? (vals[1] - controls[1].min) / (controls[1].max - controls[1].min || 1) : 0.5;
+        const norm2 = controls[2] ? (vals[2] - controls[2].min) / (controls[2].max - controls[2].min || 1) : 0.3;
+
+        const readout = document.getElementById("simLiveReadout");
+
+            if (formulaType === "wave_interference") {
+                // Double-slit interference wavefield + intensity envelope
+          const slitGap = 24 + norm1 * 65;
+          const k = 0.06 + (1 - norm0) * 0.14;
+          const obsCollapse = norm2;
+
+                // Two emitter points on left
+          const s1Y = h / 2 - slitGap / 2;
+          const s2Y = h / 2 + slitGap / 2;
+
+                // Draw radiating wavefront rings
+                for (let r = (appState.simTime * 28) % 28; r < w * 0.72; r += 28) {
+                    ctx.strokeStyle = `rgba(46, 90, 68, ${Math.max(0.05, 0.45 - r / w)})`;
+                    ctx.lineWidth = 1.6;
+                    ctx.beginPath();
+                    ctx.arc(70, s1Y, r, -Math.PI / 2.2, Math.PI / 2.2);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = `rgba(200, 90, 50, ${Math.max(0.05, 0.45 - r / w)})`;
+                    ctx.beginPath();
+                    ctx.arc(70, s2Y, r, -Math.PI / 2.2, Math.PI / 2.2);
+                    ctx.stroke();
+                }
+
+                // Barrier & Slits
+                ctx.fillStyle = "#DED7C8";
+                ctx.fillRect(66, 0, 8, s1Y - 8);
+                ctx.fillRect(66, s1Y + 8, 8, slitGap - 16);
+                ctx.fillRect(66, s2Y + 8, 8, h - (s2Y + 8));
+
+                // Detector Screen Intensity Curve on right
+          const screenX = w - 95;
+                ctx.beginPath();
+                for (let y = 12; y < h - 12; y++) {
+            const dy = y - h / 2;
+            const envelope = Math.exp(-(dy * dy) / (2 * 55 * 55));
+            const fringe = Math.cos(dy * slitGap * k * 0.045);
+            const interference = fringe * fringe;
+            const particleSum = 0.55 * envelope;
+            const intensity = (1 - obsCollapse) * (envelope * interference) + obsCollapse * particleSum;
+            const barLen = intensity * 78;
+                    if (y === 12) ctx.moveTo(screenX + barLen, y);
+                    else ctx.lineTo(screenX + barLen, y);
+                }
+                ctx.strokeStyle = "#C85A32";
+                ctx.lineWidth = 2.8;
+                ctx.stroke();
+
+                readout.textContent = `${controls[0].label}: ${vals[0]}${controls[0].unit} • Fringe Contrast: ${Math.round((1 - obsCollapse) * 100)}%`;
+
+            } else if (formulaType === "derivative_tangent" || formulaType === "function_graph") {
+                // Axes
+          const midY = h * 0.56;
+                ctx.strokeStyle = "rgba(247,243,235,0.35)";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(24, midY);
+                ctx.lineTo(w - 24, midY);
+                ctx.moveTo(w / 2, 20);
+                ctx.lineTo(w / 2, h - 20);
+                ctx.stroke();
+
+          const amp = 35 + norm0 * 75;
+          const freq = 0.012 + norm1 * 0.025;
+          const x0 = 60 + norm2 * (w - 120);
+
+          const f = (x) => midY - amp * Math.sin((x - w / 2) * freq) - 0.15 * amp * Math.cos((x - w / 2) * freq * 2);
+          const df = (x) => -amp * freq * Math.cos((x - w / 2) * freq) + 0.3 * amp * freq * Math.sin((x - w / 2) * freq * 2);
+
+                // Function curve
+                ctx.beginPath();
+                for (let x = 24; x <= w - 24; x += 2) {
+            const y = f(x);
+                    if (x === 24) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = "#6BBF94";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Tangent line at x0
+          const y0 = f(x0);
+          const slope = df(x0);
+                ctx.beginPath();
+                ctx.moveTo(x0 - 110, y0 - slope * 110);
+                ctx.lineTo(x0 + 110, y0 + slope * 110);
+                ctx.strokeStyle = "#C85A32";
+                ctx.lineWidth = 2.4;
+                ctx.stroke();
+
+                // Point of tangency
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(x0, y0, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#C85A32";
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                readout.textContent = `x = ${(x0 - w / 2).toFixed(1)} • Instantaneous Slope dy/dx = ${(-slope * 10).toFixed(2)}`;
+
+            } else if (formulaType === "supply_demand") {
+                // Economic Supply & Demand Equilibrium Graph
+          const pad = 44;
+                ctx.strokeStyle = "rgba(247,243,235,0.4)";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(pad, 24);
+                ctx.lineTo(pad, h - pad);
+                ctx.lineTo(w - 28, h - pad);
+                ctx.stroke();
+
+          const demandShift = (norm0 - 0.5) * 90;
+          const supplyShift = (norm1 - 0.5) * 90;
+          const elasticity = 0.5 + norm2 * 0.9;
+
+                // Demand Curve (downward sloping)
+                ctx.beginPath();
+                ctx.moveTo(pad + 20, 45 - demandShift * 0.4);
+                ctx.lineTo(w - 45, h - pad - 20 - demandShift * 0.4);
+                ctx.strokeStyle = "#C85A32";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Supply Curve (upward sloping)
+                ctx.beginPath();
+                ctx.moveTo(pad + 20, h - pad - 25 - supplyShift * 0.4);
+                ctx.lineTo(w - 45, 45 - supplyShift * 0.4 * elasticity);
+                ctx.strokeStyle = "#6BBF94";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Equilibrium intersection
+          const eqX = w * 0.5 + (demandShift - supplyShift) * 0.45;
+          const eqY = h * 0.5 - (demandShift + supplyShift) * 0.25;
+
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = "rgba(247,243,235,0.45)";
+                ctx.beginPath();
+                ctx.moveTo(pad, eqY);
+                ctx.lineTo(eqX, eqY);
+                ctx.lineTo(eqX, h - pad);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = "#F7F3EB";
+                ctx.beginPath();
+                ctx.arc(eqX, eqY, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                readout.textContent = `Equilibrium Price P*: $${Math.max(5, Math.round(h - eqY))} • Quantity Q*: ${Math.max(10, Math.round(eqX - pad))} units`;
+
+            } else if (formulaType === "orbit_gravity") {
+                // Orbital Mechanics / Field Simulation
+          const cx = w / 2;
+          const cy = h / 2;
+          const semiMajor = 70 + norm0 * 95;
+          const eccentricity = norm1 * 0.65;
+          const speed = 0.6 + norm2 * 1.8;
+
+                // Orbit ellipse
+          const semiMinor = semiMajor * Math.sqrt(1 - eccentricity * eccentricity);
+          const focusOffset = semiMajor * eccentricity;
+
+                ctx.strokeStyle = "rgba(222, 215, 200, 0.25)";
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, semiMajor, semiMinor, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Central mass at focus
+                ctx.fillStyle = "#C85A32";
+                ctx.beginPath();
+                ctx.arc(cx - focusOffset, cy, 16, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Orbiting body
+          const angle = appState.simTime * speed;
+          const px = cx + semiMajor * Math.cos(angle);
+          const py = cy + semiMinor * Math.sin(angle);
+
+                // Radius vector
+                ctx.strokeStyle = "rgba(107, 191, 148, 0.5)";
+                ctx.beginPath();
+                ctx.moveTo(cx - focusOffset, cy);
+                ctx.lineTo(px, py);
+                ctx.stroke();
+
+                ctx.fillStyle = "#6BBF94";
+                ctx.beginPath();
+                ctx.arc(px, py, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                readout.textContent = `Semi-Major Axis a: ${Math.round(semiMajor)} AU • Eccentricity e: ${eccentricity.toFixed(2)}`;
+
+            } else if (formulaType === "exponential_growth" || formulaType === "neural_activation") {
+                // Sigmoid / Exponential Growth Curve
+          const pad = 40;
+                ctx.strokeStyle = "rgba(247,243,235,0.35)";
+                ctx.beginPath();
+                ctx.moveTo(pad, h - pad);
+                ctx.lineTo(w - pad, h - pad);
+                ctx.moveTo(pad, 24);
+                ctx.lineTo(pad, h - pad);
+                ctx.stroke();
+
+          const rate = 1.5 + norm0 * 6;
+          const shift = (norm1 - 0.5) * 3;
+          const cap = 0.4 + norm2 * 0.55;
+
+                ctx.beginPath();
+                for (let px = pad; px <= w - pad; px += 2) {
+            const t = ((px - pad) / (w - 2 * pad)) * 10 - 5;
+            const yVal = cap / (1 + Math.exp(-rate * (t - shift)));
+            const py = h - pad - yVal * (h - 2 * pad);
+                    if (px === pad) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = "#C85A32";
+                ctx.lineWidth = 3.2;
+                ctx.stroke();
+
+                // Animated tracer dot
+          const tracerNorm = (Math.sin(appState.simTime * 0.8) + 1) / 2;
+          const tx = pad + tracerNorm * (w - 2 * pad);
+          const tt = tracerNorm * 10 - 5;
+          const ty = h - pad - (cap / (1 + Math.exp(-rate * (tt - shift)))) * (h - 2 * pad);
+                ctx.fillStyle = "#6BBF94";
+                ctx.beginPath();
+                ctx.arc(tx, ty, 6.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                readout.textContent = `Steepness k: ${rate.toFixed(2)} • Saturation Ceiling: ${Math.round(cap * 100)}%`;
+
+            } else {
+                // CONCEPT DYNAMICS & MOTION EXPLORER (For Philosophy, Humanities, Systems)
+          const nodes = appState.data?.diagramNodes || [];
+          const count = Math.max(3, nodes.length);
+          const cx = w / 2;
+          const cy = h / 2;
+          const orbitR = Math.min(w, h) * 0.29;
+          const tension = 0.4 + norm0 * 0.9;
+          const pulseSpeed = 0.5 + norm1 * 1.5;
+          const harmony = norm2;
+
+          const pts = [];
+                for (let i = 0; i < count; i++) {
+            const ang = (i / count) * Math.PI * 2 + appState.simTime * 0.25 * pulseSpeed;
+            const wobble = Math.sin(appState.simTime * 2 + i) * 14 * (1 - harmony);
+                    pts.push({
+                            x: cx + (orbitR + wobble) * Math.cos(ang),
+                            y: cy + (orbitR * 0.78 + wobble) * Math.sin(ang),
+                            label: nodes[i]?.label || `Pillar ${i + 1}`
+            });
+                }
+
+                // Connective tension web
+                for (let i = 0; i < pts.length; i++) {
+                    for (let j = i + 1; j < pts.length; j++) {
+                        ctx.strokeStyle = `rgba(200, 90, 50, ${0.2 + tension * 0.35})`;
+                        ctx.lineWidth = 1.5 + tension;
+                        ctx.beginPath();
+                        ctx.moveTo(pts[i].x, pts[i].y);
+                        ctx.lineTo(pts[j].x, pts[j].y);
+                        ctx.stroke();
+                    }
+                }
+
+                // Center synthesis core
+                ctx.fillStyle = "rgba(46, 90, 68, 0.35)";
+                ctx.beginPath();
+                ctx.arc(cx, cy, 26 + Math.sin(appState.simTime * 3) * 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                pts.forEach((p, idx) => {
+                        ctx.fillStyle = idx % 2 === 0 ? "#C85A32" : "#2E5A44";
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = "#F7F3EB";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.fillStyle = "#F7F3EB";
+                ctx.font = "600 11px Plus Jakarta Sans, sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(p.label.slice(0, 18), p.x, p.y + 30);
+          });
+                ctx.textAlign = "left";
+
+                readout.textContent = `Conceptual Cohesion: ${Math.round(harmony * 100)}% • Dialectical Tension: ${Math.round(tension * 75)}%`;
+            }
+
+            appState.simAnimFrame = requestAnimationFrame(renderFrame);
+    }
+
+    renderFrame();
+}
+
+// -------------------------------------------------------------------------
+// 9. AI VIDEO EXPLAINER ENGINE (16:9 Multi-Scene Canvas + Web Speech Voice)
+// -------------------------------------------------------------------------
+function renderVideoChapters(storyboard) {
+    if (!storyboard) return;
+    document.getElementById("videoTitle").textContent = storyboard.title || "Narrated Visual Walkthrough";
+      const scenes = storyboard.scenes || [];
+      const grid = document.getElementById("videoChaptersGrid");
+    grid.innerHTML = scenes
+            .map(
+                    (sc, idx) => `
+          <button type="button" data-scene-idx="${idx}" class="video-chapter-btn text-left p-3.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition">
+            <div class="flex items-center justify-between text-[11px] font-mono text-terracotta mb-1">
+            <span>SCENE 0${idx + 1}</span>
+            <span>${escapeHtml(sc.keyMetric || "")}</span>
+            </div>
+            <div class="font-serif font-bold text-sm text-white line-clamp-1">${escapeHtml(sc.title)}</div>
+            <p class="text-xs text-stone/75 mt-1 line-clamp-2 leading-relaxed">${escapeHtml(sc.narration)}</p>
+            </button>
+        `
+        )
+        .join("");
+
+    grid.querySelectorAll(".video-chapter-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+          const idx = parseInt(btn.getAttribute("data-scene-idx"), 10);
+    appState.videoProgress = idx / Math.max(1, scenes.length);
+    appState.lastSpokenScene = -1;
+    startVideoPlayback();
+        });
+      });
+}
+
+function speakSceneNarration(text) {
+    if (!appState.voiceEnabled || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.02;
+    utter.pitch = 1.0;
+    window.speechSynthesis.speak(utter);
+}
+
+function startVideoPlayback() {
+    if (appState.videoPlaying) return;
+    appState.videoPlaying = true;
+    appState.videoLastTick = performance.now();
+    document.getElementById("playIcon").classList.add("hidden");
+    document.getElementById("pauseIcon").classList.remove("hidden");
+
+    function tick(now) {
+    if (!appState.videoPlaying) return;
+        const dt = (now - appState.videoLastTick) / 1000;
+    appState.videoLastTick = now;
+    appState.videoProgress += dt / appState.videoDurationSec;
+
+    if (appState.videoProgress >= 1) {
+        appState.videoProgress = 1;
+        drawVideoFrame(1);
+        stopVideoPlayback();
+        appState.videoProgress = 0;
+        return;
+    }
+
+    drawVideoFrame(appState.videoProgress);
+    appState.videoAnimFrame = requestAnimationFrame(tick);
+      }
+
+    appState.videoAnimFrame = requestAnimationFrame(tick);
+}
+
+function stopVideoPlayback() {
+    appState.videoPlaying = false;
+    if (appState.videoAnimFrame) cancelAnimationFrame(appState.videoAnimFrame);
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    document.getElementById("playIcon").classList.remove("hidden");
+    document.getElementById("pauseIcon").classList.add("hidden");
+}
+
+function drawVideoFrame(progress) {
+      const canvas = document.getElementById("videoCanvas");
+      const ctx = canvas.getContext("2d");
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+    if (canvas.width !== Math.round(rect.width * dpr)) {
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const w = rect.width;
+      const h = rect.height;
+      const scenes = appState.data?.videoStoryboard?.scenes || [];
+    if (scenes.length === 0) return;
+
+      const sceneCount = scenes.length;
+      const rawScene = Math.min(sceneCount - 0.0001, progress * sceneCount);
+      const sceneIdx = Math.floor(rawScene);
+      const localT = rawScene - sceneIdx; // 0 to 1 within scene
+      const scene = scenes[sceneIdx];
+
+    // Trigger voice narration when entering a new scene during playback
+    if (appState.videoPlaying && appState.lastSpokenScene !== sceneIdx) {
+        appState.lastSpokenScene = sceneIdx;
+        speakSceneNarration(scene.narration);
+    }
+
+    // Update UI HUD
+    document.getElementById("videoSceneIndicator").textContent = `SCENE ${sceneIdx + 1} / ${sceneCount}`;
+    document.getElementById("videoProgressBar").style.width = `${(progress * 100).toFixed(1)}%`;
+      const elapsedSec = Math.floor(progress * appState.videoDurationSec);
+    document.getElementById("videoTimeLabel").textContent = `00:${String(elapsedSec).padStart(2, "0")} / 00:${appState.videoDurationSec}`;
+
+      const captionBox = document.getElementById("videoCaptionBox");
+    if (appState.captionsEnabled) {
+        captionBox.classList.remove("hidden");
+        document.getElementById("videoCaptionText").textContent = scene.narration;
+    } else {
+        captionBox.classList.add("hidden");
+    }
+
+    // Background theatrical gradient
+      const bgGrad = ctx.createRadialGradient(w * 0.5, h * 0.45, 30, w * 0.5, h * 0.5, w * 0.7);
+    bgGrad.addColorStop(0, "#242824");
+    bgGrad.addColorStop(1, "#111311");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+      const accent = scene.accentColor || "#C85A32";
+
+    // Animated motion graphics tailored to scene visualStyle
+    ctx.save();
+    if (scene.visualStyle === "wave_propagation" || scene.visualStyle === "interference_bars") {
+        for (let i = 0; i < 9; i++) {
+          const radius = ((localT * 180 + i * 32) % 260) + 15;
+            ctx.strokeStyle = i % 2 === 0 ? accent : "#6BBF94";
+            ctx.globalAlpha = Math.max(0.08, 1 - radius / 270);
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(w * 0.35, h * 0.48, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(w * 0.65, h * 0.48, radius, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    } else if (scene.visualStyle === "network_pulse" || scene.visualStyle === "geometric_orbit") {
+        const nodes = 6;
+        for (let i = 0; i < nodes; i++) {
+          const a = (i / nodes) * Math.PI * 2 + localT * 2.2;
+          const nx = w * 0.5 + Math.cos(a) * (w * 0.22);
+          const ny = h * 0.46 + Math.sin(a) * (h * 0.22);
+            ctx.strokeStyle = "rgba(247,243,235,0.22)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.5, h * 0.46);
+            ctx.lineTo(nx, ny);
+            ctx.stroke();
+
+            ctx.fillStyle = i % 2 === 0 ? accent : "#6BBF94";
+            ctx.beginPath();
+            ctx.arc(nx, ny, 10 + Math.sin(localT * 6 + i) * 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    } else {
+        // Kinetic editorial rings & sliding bars
+        for (let b = 0; b < 7; b++) {
+          const barW = 60 + Math.sin(localT * 4 + b) * 45 + localT * 90;
+            ctx.fillStyle = b % 2 === 0 ? accent : "#2E5A44";
+            ctx.globalAlpha = 0.35;
+            ctx.fillRect(w * 0.14, 75 + b * 36, barW, 14);
+        }
+    }
+    ctx.restore();
+
+    // Kinetic Scene Title & Key Metric Badge on Canvas
+      const slideIn = Math.min(1, localT * 4);
+    ctx.globalAlpha = slideIn;
+    ctx.fillStyle = "#F7F3EB";
+    ctx.font = `700 ${Math.max(18, Math.round(w * 0.032))}px Fraunces, Georgia, serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(scene.title, w / 2, h * 0.36 + (1 - slideIn) * 14);
+
+    if (scene.keyMetric) {
+        ctx.fillStyle = accent;
+        ctx.font = `600 ${Math.max(13, Math.round(w * 0.02))}px JetBrains Mono, monospace`;
+        ctx.fillText(`[ ${scene.keyMetric} ]`, w / 2, h * 0.46 + (1 - slideIn) * 10);
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "left";
+}
+
+// -------------------------------------------------------------------------
+// 10. ORCHESTRATE CONCEPT SEARCH & EVENT BINDINGS
+// -------------------------------------------------------------------------
+async function handleExplainConcept(query) {
+      const cleanQuery = query.trim();
+    if (!cleanQuery) return;
+
+      const submitBtn = document.getElementById("explainSubmitBtn");
+      const btnText = document.getElementById("submitBtnText");
+    submitBtn.disabled = true;
+    btnText.textContent = "Synthesizing...";
+    showToast(`Researching & building visual studio for "${cleanQuery}"...`, "info");
+
+    try {
+        const structuredData = await fetchConceptExplanation(cleanQuery);
+        renderConceptUI(structuredData, true);
+        showToast(`Ready: ${structuredData.conceptTitle}`, "success");
+    } catch (err) {
+        showToast("Gemini synthesis encountered an issue. Please try again.", "error");
+    } finally {
+        submitBtn.disabled = false;
+        btnText.textContent = "Explain Concept";
+    }
+}
+
+    window.addEventListener("DOMContentLoaded", () => {
+// Populate initial walkthrough immediately and generate its two dynamic AI images
+renderConceptUI(INITIAL_CONCEPT_DATA, true);
+
+      const form = document.getElementById("conceptSearchForm");
+      const input = document.getElementById("conceptInput");
+      const clearBtn = document.getElementById("clearInputBtn");
+
+      input.addEventListener("input", () => {
+        clearBtn.classList.toggle("hidden", input.value.length === 0);
+      });
+
+              clearBtn.addEventListener("click", () => {
+input.value = "";
+        clearBtn.classList.add("hidden");
+        input.focus();
+      });
+
+              form.addEventListener("submit", (e) => {
+        e.preventDefault();
+handleExplainConcept(input.value);
+      });
+
+              // Starter topic pills
+              document.querySelectorAll(".topic-pill").forEach((pill) => {
+        pill.addEventListener("click", () => {
+        const concept = pill.getAttribute("data-concept");
+input.value = concept;
+          clearBtn.classList.remove("hidden");
+handleExplainConcept(concept);
+        });
+                });
+
+                // Scroll to Visual Studio button
+                document.getElementById("scrollToStudioBtn").addEventListener("click", () => {
+        document.getElementById("visualStudioSection").scrollIntoView({ behavior: "smooth" });
+        });
+
+        // Regenerate Simulator Parameters button
+        document.getElementById("regenSimBtn").addEventListener("click", regenerateSimulatorParameters);
+
+// Regenerate Image Window I & Window II buttons
+      const variations = [
+        "dramatic golden hour chiaroscuro studio lighting, macro detail",
+        "vibrant botanical science museum diorama, warm terracotta and sage accents",
+        "cinematic wide-angle architectural visualization, ultra-detailed",
+        "rich editorial gouache and ink scientific plate aesthetic"
+        ];
+        document.getElementById("regenImg1Btn").addEventListener("click", () => {
+        if (!appState.data) return;
+        const v = variations[Math.floor(Math.random() * variations.length)];
+generateDynamicImage(1, appState.data.image1Prompt, v);
+      });
+              document.getElementById("regenImg2Btn").addEventListener("click", () => {
+        if (!appState.data) return;
+        const v = variations[Math.floor(Math.random() * variations.length)];
+generateDynamicImage(2, appState.data.image2Prompt, v);
+      });
+
+              // Video Explainer Controls
+              document.getElementById("videoPlayPauseBtn").addEventListener("click", () => {
+        if (appState.videoPlaying) stopVideoPlayback();
+        else startVideoPlayback();
+      });
+
+              document.getElementById("videoProgressTrack").addEventListener("click", (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickRatio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+appState.videoProgress = clickRatio;
+appState.lastSpokenScene = -1;
+drawVideoFrame(clickRatio);
+      });
+
+              document.getElementById("videoVoiceBtn").addEventListener("click", () => {
+appState.voiceEnabled = !appState.voiceEnabled;
+        document.getElementById("voiceIcon").textContent = appState.voiceEnabled ? "🔊" : "🔇";
+        document.getElementById("voiceLabel").textContent = appState.voiceEnabled ? "Voice On" : "Muted";
+        if (!appState.voiceEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        }
+                });
+
+                document.getElementById("videoCcBtn").addEventListener("click", () => {
+appState.captionsEnabled = !appState.captionsEnabled;
+drawVideoFrame(appState.videoProgress);
+      });
+
+              document.getElementById("regenVideoBtn").addEventListener("click", regenerateVideoExplainer);
+
+// Responsive canvas redraw on window resize
+      window.addEventListener("resize", () => {
+drawVideoFrame(appState.videoProgress);
+      });
+              });
+  </script>
+</body>
+</html>
